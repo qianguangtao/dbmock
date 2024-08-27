@@ -6,7 +6,7 @@ import lombok.Data;
  * @author qiangt
  * @version 1.0
  * @date 2024/8/27 19:24
- * @description: TODO
+ * @description: dbmock列配置
  */
 @Data
 public class Column<T> {

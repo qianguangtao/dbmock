@@ -8,7 +8,7 @@ import java.util.List;
  * @author qiangt
  * @version 1.0
  * @date 2024/8/27 19:27
- * @description: TODO
+ * @description: dbmock表配置
  */
 @Data
 public class Table {
