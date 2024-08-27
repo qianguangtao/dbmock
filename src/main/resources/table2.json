@@ -2,7 +2,7 @@
   {
     "name": "base_user",
     "total": 10,
-    "column": [
+    "columnList": [
       {
         "name": "F_RealName",
         "required": true
@@ -16,7 +16,7 @@
   {
     "name": "rdwh_project_main",
     "total": 1,
-    "column": [
+    "columnList": [
       {
         "name": "F_project_type",
         "data": ["488607156011015685","488607255978057221","488607321589554693","488607364434370053","514075500927317957","514075592920987589","514075661543995333","514076017833342917","529263504503342853","560726294275306117","560726581379609221","560726779971515013","575278703546747525"]
@@ -38,7 +38,7 @@
   {
     "name": "rdwh_bd_virtual_organize",
     "total": 1,
-    "column": {
+    "columnList": {
         "organize_code": {
           "required": true
         }
@@ -47,7 +47,7 @@
   {
     "name": "rdwh_bd_virtual_organize_mapping",
     "total": 1,
-    "column": [
+    "columnList": [
       {
         "name": "virtual_organize_id",
         "foreignKey": "rdwh_bd_virtual_organize.F_Id"
@@ -61,7 +61,7 @@
   {
     "name": "rdwh_work",
     "total": 5,
-    "column": [
+    "columnList": [
       {
         "name": "F_organizeId",
         "foreignKey": "rdwh_bd_virtual_organize_mapping.organize_id"
@@ -79,7 +79,7 @@
   {
     "name": "rdwh_work_project_2024",
     "total": 25,
-    "column": [
+    "columnList": [
       {
         "name": "F_work_id",
         "foreignKey": "rdwh_work.F_Id"
@@ -89,7 +89,7 @@
   {
     "name": "rdwh_work_project_info_2024",
     "total": 50,
-    "column": [
+    "columnList": [
       {
         "name": "F_work_id",
         "foreignKey": "rdwh_work.F_Id"
@@ -131,7 +131,7 @@
   {
     "name": "rdwh_work_content",
     "total": 50,
-    "column": [
+    "columnList": [
       {
         "name": "F_is_develop",
         "data": [0, 1]
