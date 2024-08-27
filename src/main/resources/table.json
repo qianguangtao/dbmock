@@ -1,0 +1,123 @@
+[
+  {
+    "name": "base_user",
+    "total": 10,
+    "column": {
+      "F_RealName": {
+        "required": true
+      }
+    }
+  },
+  {
+    "name": "base_user_extension",
+    "total": 10
+  },
+  {
+    "name": "rdwh_project_main",
+    "total": 1,
+    "column": {
+      "F_project_type": {
+        "data": ["488607156011015685","488607255978057221","488607321589554693","488607364434370053","514075500927317957","514075592920987589","514075661543995333","514076017833342917","529263504503342853","560726294275306117","560726581379609221","560726779971515013","575278703546747525"]
+      },
+      "F_project_no": {
+        "required": true
+      },
+      "F_ps_no": {
+        "required": true
+      },
+      "F_project_name": {
+        "required": true
+      }
+    }
+  },
+  {
+    "name": "rdwh_bd_virtual_organize",
+    "total": 1,
+    "column": {
+        "organize_code": {
+          "required": true
+        }
+    }
+  },
+  {
+    "name": "rdwh_bd_virtual_organize_mapping",
+    "total": 1,
+    "column": {
+      "virtual_organize_id": {
+        "foreignKey": "rdwh_bd_virtual_organize.F_Id"
+      },
+      "organize_id": {
+        "data": "virtual_organize_id"
+      }
+    }
+  },
+  {
+    "name": "rdwh_work",
+    "total": 5,
+    "column": {
+      "F_organizeId": {
+        "foreignKey": "rdwh_bd_virtual_organize_mapping.organize_id"
+      },
+      "F_company_code": {
+        "required": true
+      },
+      "F_organizeTreeName": {
+        "required": true
+      }
+    }
+  },
+  {
+    "name": "rdwh_work_project_2024",
+    "total": 25,
+    "column": {
+      "F_work_id": {
+        "foreignKey": "rdwh_work.F_Id"
+      }
+    }
+  },
+  {
+    "name": "rdwh_work_project_info_2024",
+    "total": 50,
+    "column": {
+      "F_work_id": {
+        "foreignKey": "rdwh_work.F_Id"
+      },
+      "F_work_project_id": {
+        "foreignKey": "rdwh_work_project_2024.F_Id"
+      },
+      "F_week_info": {
+        "foreignKey": "rdwh_work_content.F_Id"
+      },
+      "F_project_id": {
+        "foreignKey": "rdwh_project_main.F_Id"
+      },
+      "F_reported_user": {
+        "foreignKey": "base_user.F_Id"
+      },
+      "F_status": {
+        "data": [0, 1]
+      },
+      "F_Biz_type": {
+        "data": ["559006923546962181","559006993503758597","559007060453239045","559007119194466565"]
+      },
+      "F_reported_user": {
+        "required": true
+      },
+      "F_hour_percentage": {
+        "required": true
+      }
+    }
+  },
+  {
+    "name": "rdwh_work_content",
+    "total": 50,
+    "column": {
+      "F_is_develop": {
+        "data": [0, 1]
+      },
+      "F_content_name": {
+        "required": true
+      }
+    }
+  }
+]
