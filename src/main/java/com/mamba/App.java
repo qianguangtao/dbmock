@@ -15,7 +15,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.alibaba.fastjson.parser.Feature;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.mamba.pojo.Column;
 import com.mamba.pojo.ColumnInfo;
 import com.mamba.pojo.JdbcType;
@@ -63,14 +62,14 @@ public class App {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
-        ClassPathResource cpr = new ClassPathResource("table2.json");
+        ClassPathResource cpr = new ClassPathResource("table1.json");
         final Object parse = JSON.parse(cpr.readBytes(), Feature.SupportArrayToBean);
         String s = JSON.toJSONString(parse);
         List<Table> tablesList = JSON.parseObject(s, new TypeReference<List<Table>>() {
         });
         resolveTablesListWithDB(tablesList);
-        System.out.println("处理完之后的tablesList");
-        System.out.println(JSON.toJSONString(tablesList, SerializerFeature.PrettyFormat));
+        // System.out.println("处理完之后的tablesList");
+        // System.out.println(JSON.toJSONString(tablesList, SerializerFeature.PrettyFormat));
         Map<String, Integer> tableTotalMap = tablesList.stream().collect(Collectors.toMap(Table::getName, t -> t.getTotal()));
         // 4、构造insert语句
         for (Table table : tablesList) {
@@ -146,8 +145,10 @@ public class App {
             List<List<List<String>>> partition = ListUtil.partition(valueListBatch, 1000);
             for (List<List<String>> list : partition) {
                 String insertStatement = buildInsertStatement(table.getName(), columnNameList, list);
-                // Db.use().execute(insertStatement);
+                Db.use().execute(insertStatement);
+                Thread.sleep(5000);
             }
+            System.out.println("插入表：" + table.getName() + "成功");
         }
     }
 
