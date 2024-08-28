@@ -10,6 +10,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.db.Db;
 import cn.hutool.db.Entity;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.TypeReference;
 import com.alibaba.fastjson.parser.Feature;
 import com.alibaba.fastjson.serializer.SerializerFeature;
@@ -99,13 +100,10 @@ public class App {
                             // column.getData()是String，则是取该表的其他字段值
                             String data = (String) column.getData();
                             columnValue = foreignKeyMap.get(data);
-                        } else if (column.getData() instanceof String[]) {
+                        } else if (column.getData() instanceof JSONArray) {
                             // column.getData()是数组，则随机取值
-                            String[] random = (String[]) column.getData();
-                            columnValue = getColumnValue(random[new Random().nextInt(random.length)], column);
-                        } else if (column.getData() instanceof int[]) {
-                            // column.getData()是数组，则随机取值
-                            int[] random = (int[]) column.getData();
+                            JSONArray jsonArray = (JSONArray) column.getData();
+                            Object[] random = jsonArray.stream().toArray();
                             columnValue = getColumnValue(random[new Random().nextInt(random.length)], column);
                         }
                     } else if (ObjectUtil.isNotNull(column.getForeignKey())) {
@@ -132,9 +130,9 @@ public class App {
     public static String getDefaultColumnValue(Column column) {
         String columnValue = null;
         if (column.getJdbcType().clazz == LocalDate.class) {
-            return DateUtil.format(new Date(), DatePattern.NORM_DATE_PATTERN);
+            return "'" + DateUtil.format(new Date(), DatePattern.NORM_DATE_PATTERN) + "'";
         } else if (column.getJdbcType().clazz == LocalDateTime.class) {
-            return DateUtil.format(new Date(), DatePattern.NORM_DATETIME_PATTERN);
+            return "'" + DateUtil.format(new Date(), DatePattern.NORM_DATETIME_PATTERN) + "'";
         } else {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < column.getLength(); i++) {

@@ -1,17 +1,21 @@
 [
   {
     "name": "rdwh_bd_virtual_organize",
-    "total": 5,
+    "total": 1,
     "columnList": [
       {
         "name": "organize_code",
+        "required": true
+      },
+      {
+        "name": "F_CreatorTime",
         "required": true
       }
     ]
   },
   {
     "name": "rdwh_bd_virtual_organize_mapping",
-    "total": 10,
+    "total": 1,
     "columnList": [
       {
         "name": "virtual_organize_id",
@@ -20,6 +24,13 @@
       {
         "name": "organize_id",
         "data": "virtual_organize_id"
+      },
+      {
+        "name": "F_CreatorTime",
+        "data": [
+          "2024-01-01 11:11:11",
+          "2024-02-02 11:11:11"
+        ]
       }
     ]
   }
