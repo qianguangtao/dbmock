@@ -11,7 +11,13 @@
   },
   {
     "name": "base_user_extension",
-    "total": 10
+    "total": 10,
+    "columnList": [
+      {
+        "name": "F_company_code",
+        "required": true
+      }
+    ]
   },
   {
     "name": "rdwh_project_main",
@@ -142,12 +148,15 @@
         ]
       },
       {
-        "name": "F_reported_user",
+        "name": "F_hour_percentage",
         "required": true
       },
       {
-        "name": "F_hour_percentage",
-        "required": true
+        "name": "F_day",
+        "data": {
+          "start": "2024-01-01",
+          "end": "2024-12-31"
+        }
       }
     ]
   },

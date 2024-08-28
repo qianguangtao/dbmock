@@ -63,7 +63,7 @@ public class App {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
-        ClassPathResource cpr = new ClassPathResource("table3-single.json");
+        ClassPathResource cpr = new ClassPathResource("table2.json");
         final Object parse = JSON.parse(cpr.readBytes(), Feature.SupportArrayToBean);
         String s = JSON.toJSONString(parse);
         List<Table> tablesList = JSON.parseObject(s, new TypeReference<List<Table>>() {
@@ -146,7 +146,7 @@ public class App {
             List<List<List<String>>> partition = ListUtil.partition(valueListBatch, 1000);
             for (List<List<String>> list : partition) {
                 String insertStatement = buildInsertStatement(table.getName(), columnNameList, list);
-                Db.use().execute(insertStatement);
+                // Db.use().execute(insertStatement);
             }
         }
     }
@@ -157,6 +157,8 @@ public class App {
             return "'" + DateUtil.format(new Date(), DatePattern.NORM_DATE_PATTERN) + "'";
         } else if (column.getJdbcType().clazz == LocalDateTime.class) {
             return "'" + DateUtil.format(new Date(), DatePattern.NORM_DATETIME_PATTERN) + "'";
+        } else if (column.getJdbcType() == JdbcType.TEXT) {
+            return "'" + column.getName() + "'";
         } else {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < column.getLength(); i++) {
