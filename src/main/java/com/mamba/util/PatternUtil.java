@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
  */
 public class PatternUtil {
 
-    public static Pair<String, Object> getColumnTypeAndSize(String columnType) {
+    public static Pair<String, Integer> getColumnTypeAndSize(String columnType) {
         // 正则表达式
         String regex = "(\\w+)\\((\\d+)\\)";
         // 编译正则表达式

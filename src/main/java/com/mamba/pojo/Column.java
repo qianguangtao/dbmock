@@ -13,5 +13,7 @@ public class Column<T> {
     private String name;
     private String foreignKey;
     private Boolean required;
+    private JdbcType jdbcType;
+    private Integer length;
     private T data;
 }

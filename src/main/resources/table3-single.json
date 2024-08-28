@@ -1,0 +1,12 @@
+[
+  {
+    "name": "base_user",
+    "total": 10,
+    "columnList": [
+      {
+        "name": "F_RealName",
+        "required": true
+      }
+    ]
+  }
+]

@@ -2,21 +2,26 @@ package com.mamba;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.io.resource.ClassPathResource;
+import cn.hutool.core.lang.Pair;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.db.Db;
 import cn.hutool.db.Entity;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.alibaba.fastjson.parser.Feature;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.mamba.pojo.Column;
 import com.mamba.pojo.ColumnInfo;
+import com.mamba.pojo.JdbcType;
 import com.mamba.pojo.Table;
 import com.mamba.util.DBConverter;
+import com.mamba.util.PatternUtil;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -53,40 +58,54 @@ public class App {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
-        ClassPathResource cpr = new ClassPathResource("table2.json");
+        ClassPathResource cpr = new ClassPathResource("table3-single.json");
         final Object parse = JSON.parse(cpr.readBytes(), Feature.SupportArrayToBean);
         String s = JSON.toJSONString(parse);
         List<Table> tablesList = JSON.parseObject(s, new TypeReference<List<Table>>() {
         });
         for (Table table : tablesList) {
-            List<Column> columnList = table.getColumnList();
+            List<Column> columnList = Optional.ofNullable(table.getColumnList()).orElse(new ArrayList<Column>());
             List<String> columnNameList = new ArrayList<String>();
             if (CollectionUtil.isNotEmpty(columnList)) {
                 columnNameList = table.getColumnList().stream().map(Column::getName).collect(Collectors.toList());
             }
-            // Map<String, Column> columnMap = columnList.stream().collect(Collectors.toMap(Column::getName, c -> c));
             List<Entity> tableInfo = getTableInfo((table.getName()));
             List<ColumnInfo> columnInfoList = DBConverter.entity2Pojo(tableInfo, ColumnInfo.class);
+            // System.out.println(JSON.toJSONString(columnInfoList, SerializerFeature.PrettyFormat));
             for (ColumnInfo columnInfo : columnInfoList) {
+                Pair<String, Integer> columnPair = PatternUtil.getColumnTypeAndSize(columnInfo.getType());
+                JdbcType jdbcType = null;
+                Integer length = null;
+                if (ObjectUtil.isNotNull(columnPair)) {
+                    jdbcType = JdbcType.of(columnPair.getKey());
+                    length = columnPair.getValue();
+                } else {
+                    jdbcType = JdbcType.of(columnInfo.getType());
+                }
                 String field = columnInfo.getField();
                 // 判断是否必填
                 if (ObjectUtil.equals(columnInfo.getNullable(), "YES")) {
                     if (columnNameList.contains(field)) {
-                        table.getColumnList().forEach(c -> {
+                        for (Column c : table.getColumnList()) {
                             if (c.getName().equals(field)) {
                                 c.setRequired(true);
+                                c.setJdbcType(jdbcType);
+                                c.setLength(length);
+                                break;
                             }
-                        });
+                        }
                     } else {
                         Column column = new Column();
                         column.setName(field);
                         column.setRequired(true);
+                        column.setJdbcType(jdbcType);
+                        column.setLength(length);
+                        columnList.add(column);
                     }
                 }
             }
-            if (CollectionUtil.isNotEmpty(table.getColumnList())) {
-                table.getColumnList().stream().forEach(column -> System.out.println(column));
-            }
+            System.out.println("处理完之后的columnList");
+            System.out.println(JSON.toJSONString(columnList, SerializerFeature.PrettyFormat));
         }
     }
 
