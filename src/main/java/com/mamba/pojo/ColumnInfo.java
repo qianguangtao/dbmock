@@ -7,7 +7,7 @@ import lombok.Data;
  * @author qiangt
  * @version 1.0
  * @date 2024/8/27 21:37
- * @description: TODO
+ * @description: SHOW FULL COLUMNS FROM xxx 的封装类
  */
 @Data
 public class ColumnInfo {
