@@ -1,6 +1,7 @@
 package com.mamba;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.io.resource.ClassPathResource;
 import cn.hutool.core.lang.Pair;
 import cn.hutool.core.util.ObjectUtil;
@@ -18,10 +19,7 @@ import com.mamba.util.DBConverter;
 import com.mamba.util.PatternUtil;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -66,6 +64,7 @@ public class App {
         resolveTablesListWithDB(tablesList);
         System.out.println("处理完之后的tablesList");
         System.out.println(JSON.toJSONString(tablesList, SerializerFeature.PrettyFormat));
+        Map<String, Integer> tableTotalMap = tablesList.stream().collect(Collectors.toMap(Table::getName, t -> t.getTotal()));
         // 4、构造insert语句
         for (Table table : tablesList) {
             List<Column> columnList = table.getColumnList();
@@ -80,9 +79,65 @@ public class App {
             columnNameList.addAll(columnWithDepend);
             // 表列的处理顺序 主键 > 普通列 > 有依赖的列
             System.out.println("columnNameList排序后：" + columnNameList);
+            Map<String, Column> columnMap = columnList.stream().collect(Collectors.toMap(Column::getName, c -> c));
+            List<List<String>> valueListBatch = new ArrayList<>();
             for (int i = 1; i <= table.getTotal(); i++) {
+                List<String> valueList = new ArrayList<>();
+                int finalI = i;
+                Map<String, String> foreignKeyMap = new HashMap<>();
+                columnNameList.forEach(columnName -> {
+                    String columnValue = null;
+                    Column column = columnMap.get(columnName);
+                    if (column.getIsKey()) {
+                        columnValue = getColumnValue(finalI, column);
+                    } else if (ObjectUtil.isNotNull(column.getData())) {
+                        if (column.getData() instanceof String) {
+                            // column.getData()是String，则是取该表的其他字段值
+                            String data = (String) column.getData();
+                            columnValue = foreignKeyMap.get(data);
+                        } else if (column.getData() instanceof String[]) {
+                            // column.getData()是数组，则随机取值
+                            String[] random = (String[]) column.getData();
+                            columnValue = getColumnValue(random[new Random().nextInt(random.length)], column);
+                        } else if (column.getData() instanceof int[]) {
+                            // column.getData()是数组，则随机取值
+                            int[] random = (int[]) column.getData();
+                            columnValue = getColumnValue(random[new Random().nextInt(random.length)], column);
+                        }
+                    } else if (ObjectUtil.isNotNull(column.getForeignKey())) {
+                        // 处理字段是另一个表的主键，这里table和fkTable是n:1的关系，将fkTable的主键（total）平均分配到table
+                        String fkTable = column.getForeignKey().split("\\.")[0];
+                        Integer fkTableTotal = tableTotalMap.get(fkTable);
+                        int percent = table.getTotal() / fkTableTotal;
+                        int data = (finalI - 1) / percent + 1;
+                        columnValue = getColumnValue(data, column);
+                    } else {
+                        // 处理普通的非空字段
+                        columnValue = getDefaultColumnValue(column);
+                    }
+                    foreignKeyMap.put(columnName, columnValue);
+                    valueList.add(columnValue);
+                });
+                valueListBatch.add(valueList);
             }
+            String insertStatement = buildInsertStatement(table.getName(), columnNameList, valueListBatch);
+            System.out.println("生成insert语句：" + insertStatement);
+        }
+    }
 
+    public static String getDefaultColumnValue(Column column) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < column.getLength(); i++) {
+            sb.append("1");
+        }
+        return getColumnValue(sb.toString(), column);
+    }
+
+    public static String getColumnValue(Object value, Column column) {
+        if (column.getJdbcType().clazz == String.class) {
+            return "'" + Convert.toStr(value) + "'";
+        } else {
+            return Convert.toStr(value);
         }
     }
 
@@ -136,6 +191,15 @@ public class App {
                         column.setIsKey(isKey);
                         columnList.add(column);
                     }
+                } else {
+                    // 数据库可为空，table.json不能为空，需要使用数据库定义填充jdbcType和length
+                    for (Column c : table.getColumnList()) {
+                        if (c.getName().equals(field)) {
+                            c.setJdbcType(jdbcType);
+                            c.setLength(length);
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -165,7 +229,7 @@ public class App {
             List<String> valuesRow = columnValues.get(i);
             values.append("(");
             for (int j = 0; j < valuesRow.size(); j++) {
-                values.append("'").append(valuesRow.get(j)).append("'");
+                values.append(valuesRow.get(j));
                 if (j < valuesRow.size() - 1) {
                     values.append(", ");
                 }

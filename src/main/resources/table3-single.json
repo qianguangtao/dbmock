@@ -1,5 +1,15 @@
 [
   {
+    "name": "rdwh_bd_virtual_organize",
+    "total": 1,
+    "columnList": [
+      {
+        "name": "organize_code",
+        "required": true
+      }
+    ]
+  },
+  {
     "name": "rdwh_bd_virtual_organize_mapping",
     "total": 1,
     "columnList": [
