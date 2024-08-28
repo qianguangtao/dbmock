@@ -15,6 +15,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.alibaba.fastjson.parser.Feature;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.mamba.pojo.Column;
 import com.mamba.pojo.ColumnInfo;
 import com.mamba.pojo.JdbcType;
@@ -62,17 +63,18 @@ public class App {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
-        ClassPathResource cpr = new ClassPathResource("table1.json");
+        ClassPathResource cpr = new ClassPathResource("table2.json");
         final Object parse = JSON.parse(cpr.readBytes(), Feature.SupportArrayToBean);
         String s = JSON.toJSONString(parse);
         List<Table> tablesList = JSON.parseObject(s, new TypeReference<List<Table>>() {
         });
         resolveTablesListWithDB(tablesList);
         // System.out.println("处理完之后的tablesList");
-        // System.out.println(JSON.toJSONString(tablesList, SerializerFeature.PrettyFormat));
+        System.out.println(JSON.toJSONString(tablesList, SerializerFeature.PrettyFormat));
         Map<String, Integer> tableTotalMap = tablesList.stream().collect(Collectors.toMap(Table::getName, t -> t.getTotal()));
         // 4、构造insert语句
         for (Table table : tablesList) {
+            System.out.println("正在处理表：" + table.getName());
             List<Column> columnList = table.getColumnList();
             List<String> columnNameList = new ArrayList<String>();
             List<String> allColumnNameList = columnList.stream().map(Column::getName).collect(Collectors.toList());
@@ -84,7 +86,7 @@ public class App {
             columnNameList.addAll(normalColumn);
             columnNameList.addAll(columnWithDepend);
             // 表列的处理顺序 主键 > 普通列 > 有依赖的列
-            System.out.println("columnNameList排序后：" + columnNameList);
+            // System.out.println("columnNameList排序后：" + columnNameList);
             Map<String, Column> columnMap = columnList.stream().collect(Collectors.toMap(Column::getName, c -> c));
             List<List<String>> valueListBatch = new ArrayList<>();
             for (int i = 1; i <= table.getTotal(); i++) {
@@ -130,6 +132,7 @@ public class App {
                         // 处理字段是另一个表的主键，这里table和fkTable是n:1的关系，将fkTable的主键（total）平均分配到table
                         String fkTable = column.getForeignKey().split("\\.")[0];
                         Integer fkTableTotal = tableTotalMap.get(fkTable);
+                        System.out.println("fkTableTotal = " + fkTableTotal + " fkTable：" + fkTable);
                         int percent = table.getTotal() / fkTableTotal;
                         int data = (finalI - 1) / percent + 1;
                         columnValue = getColumnValue(data, column);
@@ -146,7 +149,7 @@ public class App {
             for (List<List<String>> list : partition) {
                 String insertStatement = buildInsertStatement(table.getName(), columnNameList, list);
                 Db.use().execute(insertStatement);
-                Thread.sleep(5000);
+                // Thread.sleep(5000);
             }
             System.out.println("插入表：" + table.getName() + "成功");
         }

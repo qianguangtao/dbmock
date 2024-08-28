@@ -1,7 +1,7 @@
 [
   {
     "name": "base_user",
-    "total": 10,
+    "total": 1000,
     "columnList": [
       {
         "name": "F_RealName",
@@ -11,7 +11,7 @@
   },
   {
     "name": "base_user_extension",
-    "total": 10,
+    "total": 1000,
     "columnList": [
       {
         "name": "F_company_code",
@@ -21,7 +21,7 @@
   },
   {
     "name": "rdwh_project_main",
-    "total": 1,
+    "total": 1000,
     "columnList": [
       {
         "name": "F_project_type",
@@ -43,7 +43,8 @@
       },
       {
         "name": "F_project_no",
-        "required": true
+        "required": true,
+        "data": "F_id"
       },
       {
         "name": "F_ps_no",
@@ -57,7 +58,7 @@
   },
   {
     "name": "rdwh_bd_virtual_organize",
-    "total": 1,
+    "total": 1000,
     "columnList": [
       {
         "name": "organize_code",
@@ -67,7 +68,7 @@
   },
   {
     "name": "rdwh_bd_virtual_organize_mapping",
-    "total": 1,
+    "total": 1000,
     "columnList": [
       {
         "name": "virtual_organize_id",
@@ -81,7 +82,7 @@
   },
   {
     "name": "rdwh_work",
-    "total": 5,
+    "total": 6000,
     "columnList": [
       {
         "name": "F_organizeId",
@@ -99,7 +100,7 @@
   },
   {
     "name": "rdwh_work_project_2024",
-    "total": 25,
+    "total": 12000,
     "columnList": [
       {
         "name": "F_work_id",
@@ -109,7 +110,7 @@
   },
   {
     "name": "rdwh_work_project_info_2024",
-    "total": 50,
+    "total": 60000,
     "columnList": [
       {
         "name": "F_work_id",
@@ -162,7 +163,7 @@
   },
   {
     "name": "rdwh_work_content",
-    "total": 50,
+    "total": 60000,
     "columnList": [
       {
         "name": "F_is_develop",
