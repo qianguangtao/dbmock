@@ -1,6 +1,7 @@
 package com.mamba;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.*;
 import cn.hutool.core.io.resource.ClassPathResource;
@@ -142,8 +143,11 @@ public class App {
                 });
                 valueListBatch.add(valueList);
             }
-            String insertStatement = buildInsertStatement(table.getName(), columnNameList, valueListBatch);
-            System.out.println("生成insert语句：" + insertStatement);
+            List<List<List<String>>> partition = ListUtil.partition(valueListBatch, 1000);
+            for (List<List<String>> list : partition) {
+                String insertStatement = buildInsertStatement(table.getName(), columnNameList, list);
+                Db.use().execute(insertStatement);
+            }
         }
     }
 
