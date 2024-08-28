@@ -2,6 +2,8 @@ package com.mamba;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.resource.ClassPathResource;
 import cn.hutool.core.lang.Pair;
 import cn.hutool.core.util.ObjectUtil;
@@ -19,6 +21,8 @@ import com.mamba.util.DBConverter;
 import com.mamba.util.PatternUtil;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -126,15 +130,25 @@ public class App {
     }
 
     public static String getDefaultColumnValue(Column column) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < column.getLength(); i++) {
-            sb.append("1");
+        String columnValue = null;
+        if (column.getJdbcType().clazz == LocalDate.class) {
+            return DateUtil.format(new Date(), DatePattern.NORM_DATE_PATTERN);
+        } else if (column.getJdbcType().clazz == LocalDateTime.class) {
+            return DateUtil.format(new Date(), DatePattern.NORM_DATETIME_PATTERN);
+        } else {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < column.getLength(); i++) {
+                sb.append("1");
+            }
+            columnValue = sb.toString();
         }
-        return getColumnValue(sb.toString(), column);
+        return getColumnValue(columnValue, column);
     }
 
     public static String getColumnValue(Object value, Column column) {
-        if (column.getJdbcType().clazz == String.class) {
+        if (column.getJdbcType().clazz == String.class
+                || (column.getJdbcType().clazz == LocalDate.class)
+                || (column.getJdbcType().clazz == LocalDateTime.class)) {
             return "'" + Convert.toStr(value) + "'";
         } else {
             return Convert.toStr(value);
