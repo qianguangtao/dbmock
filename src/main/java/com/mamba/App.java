@@ -2,15 +2,16 @@ package com.mamba;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
-import cn.hutool.core.date.DatePattern;
-import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.*;
 import cn.hutool.core.io.resource.ClassPathResource;
 import cn.hutool.core.lang.Pair;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.Db;
 import cn.hutool.db.Entity;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.alibaba.fastjson.parser.Feature;
 import com.alibaba.fastjson.serializer.SerializerFeature;
@@ -105,6 +106,25 @@ public class App {
                             JSONArray jsonArray = (JSONArray) column.getData();
                             Object[] random = jsonArray.stream().toArray();
                             columnValue = getColumnValue(random[new Random().nextInt(random.length)], column);
+                        } else if (column.getData() instanceof JSONObject) {
+                            // column.getData()是JSONObject，取开始-结束的随机值
+                            JSONObject jsonObject = (JSONObject) column.getData();
+                            String start = jsonObject.getString("start");
+                            String end = jsonObject.getString("end");
+                            if (!StrUtil.hasBlank(start, end)) {
+                                String datePattern = null;
+                                if (column.getJdbcType() == JdbcType.DATE) {
+                                    // 处理日期，取当前日期
+                                    datePattern = DatePattern.NORM_DATE_PATTERN;
+                                } else {
+                                    datePattern = DatePattern.NORM_DATETIME_PATTERN;
+                                }
+                                DateTime startTime = DateUtil.parse(start, datePattern);
+                                DateTime endTime = DateUtil.parse(end, datePattern);
+                                long between = DateUtil.between(startTime, endTime, DateUnit.DAY);
+                                DateTime dateTime = startTime.offsetNew(DateField.DAY_OF_YEAR, new Random().nextInt(Convert.toInt(between + 1)));
+                                columnValue = getColumnValue(DateUtil.format(dateTime, datePattern), column);
+                            }
                         }
                     } else if (ObjectUtil.isNotNull(column.getForeignKey())) {
                         // 处理字段是另一个表的主键，这里table和fkTable是n:1的关系，将fkTable的主键（total）平均分配到table
