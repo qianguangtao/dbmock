@@ -1,11 +1,15 @@
 [
   {
-    "name": "base_user",
-    "total": 10,
+    "name": "rdwh_bd_virtual_organize_mapping",
+    "total": 1,
     "columnList": [
       {
-        "name": "F_RealName",
-        "required": true
+        "name": "virtual_organize_id",
+        "foreignKey": "rdwh_bd_virtual_organize.F_Id"
+      },
+      {
+        "name": "organize_id",
+        "data": "virtual_organize_id"
       }
     ]
   }

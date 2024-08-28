@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 /**
  * Hello world!
  */
-public class App {
+public class App1 {
     static List<String> tables = Arrays.asList("base_user"
             , "rdwh_project_main"
             , "rdwh_bd_virtual_organize"
@@ -63,35 +63,6 @@ public class App {
         String s = JSON.toJSONString(parse);
         List<Table> tablesList = JSON.parseObject(s, new TypeReference<List<Table>>() {
         });
-        resolveTablesListWithDB(tablesList);
-        System.out.println("处理完之后的tablesList");
-        System.out.println(JSON.toJSONString(tablesList, SerializerFeature.PrettyFormat));
-        // 4、构造insert语句
-        for (Table table : tablesList) {
-            List<Column> columnList = table.getColumnList();
-            List<String> columnNameList = new ArrayList<String>();
-            List<String> allColumnNameList = columnList.stream().map(Column::getName).collect(Collectors.toList());
-            String key = columnList.stream().filter(Column::getIsKey).map(Column::getName).findFirst().get();
-            columnNameList.add(key);
-            // 获取当前列值依赖与其他列值的column，这种放在最后处理
-            List<String> columnWithDepend = columnList.stream().filter(c -> ObjectUtil.isNotNull(c.getData()) && (c.getData() instanceof String)).map(Column::getName).collect(Collectors.toList());
-            List<String> normalColumn = allColumnNameList.stream().filter(c -> !columnWithDepend.contains(c) && !c.equals(key)).collect(Collectors.toList());
-            columnNameList.addAll(normalColumn);
-            columnNameList.addAll(columnWithDepend);
-            // 表列的处理顺序 主键 > 普通列 > 有依赖的列
-            System.out.println("columnNameList排序后：" + columnNameList);
-            for (int i = 1; i <= table.getTotal(); i++) {
-            }
-
-        }
-    }
-
-    /**
-     * 结合数据库中的表字典定义和table.json表字段定义，获取最终的表字段定义
-     * @param tablesList
-     * @throws Exception
-     */
-    public static void resolveTablesListWithDB(List<Table> tablesList) throws Exception {
         for (Table table : tablesList) {
             List<Column> columnList = Optional.ofNullable(table.getColumnList()).orElse(new ArrayList<Column>());
             List<String> columnNameList = new ArrayList<String>();
@@ -113,71 +84,29 @@ public class App {
                 }
                 String field = columnInfo.getField();
                 // 判断是否必填
-                if (ObjectUtil.equals(columnInfo.getNullable(), "NO")) {
-                    Boolean isKey = ObjectUtil.equals(columnInfo.getKey(), "PRI");
+                if (ObjectUtil.equals(columnInfo.getNullable(), "YES")) {
                     if (columnNameList.contains(field)) {
-                        // 如果table.json已经有了列配置，使用数据库列定义更新列配置
                         for (Column c : table.getColumnList()) {
                             if (c.getName().equals(field)) {
                                 c.setRequired(true);
                                 c.setJdbcType(jdbcType);
                                 c.setLength(length);
-                                c.setIsKey(isKey);
                                 break;
                             }
                         }
                     } else {
-                        // 如果table.json没有列配置，使用数据库列定义新增列配置
                         Column column = new Column();
                         column.setName(field);
                         column.setRequired(true);
                         column.setJdbcType(jdbcType);
                         column.setLength(length);
-                        column.setIsKey(isKey);
                         columnList.add(column);
                     }
                 }
             }
+            System.out.println("处理完之后的columnList");
+            System.out.println(JSON.toJSONString(columnList, SerializerFeature.PrettyFormat));
         }
-    }
-
-    /**
-     * 构造insert语句
-     * @param tableName
-     * @param columnName
-     * @param columnValues
-     * @return
-     */
-    public static String buildInsertStatement(String tableName, List<String> columnName, List<List<String>> columnValues) {
-        // 构建列名部分
-        StringBuilder columns = new StringBuilder("(");
-        for (int i = 0; i < columnName.size(); i++) {
-            columns.append(columnName.get(i));
-            if (i < columnName.size() - 1) {
-                columns.append(", ");
-            }
-        }
-        columns.append(")");
-
-        // 构建值部分
-        StringBuilder values = new StringBuilder("VALUES ");
-        for (int i = 0; i < columnValues.size(); i++) {
-            List<String> valuesRow = columnValues.get(i);
-            values.append("(");
-            for (int j = 0; j < valuesRow.size(); j++) {
-                values.append("'").append(valuesRow.get(j)).append("'");
-                if (j < valuesRow.size() - 1) {
-                    values.append(", ");
-                }
-            }
-            values.append(")");
-            if (i < columnValues.size() - 1) {
-                values.append(", ");
-            }
-        }
-
-        // 构造完整的 SQL 插入语句
-        return "INSERT INTO " + tableName + " " + columns + " " + values + ";";
     }
 
     public static List<Entity> getTableInfo(String tableName) throws SQLException {

@@ -10,6 +10,7 @@ import lombok.Data;
  */
 @Data
 public class Column<T> {
+    private Boolean isKey = false;
     private String name;
     private String foreignKey;
     private Boolean required;
