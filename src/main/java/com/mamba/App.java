@@ -130,7 +130,7 @@ public class App {
                         // 处理字段是另一个表的主键，这里table和fkTable是n:1的关系，将fkTable的主键（total）平均分配到table
                         String fkTable = column.getForeignKey().split("\\.")[0];
                         Integer fkTableTotal = tableTotalMap.get(fkTable);
-                        System.out.println("fkTableTotal = " + fkTableTotal + " fkTable：" + fkTable);
+                        // System.out.println("fkTableTotal = " + fkTableTotal + " fkTable：" + fkTable);
                         int percent = table.getTotal() / fkTableTotal;
                         int data = (finalI - 1) / percent + 1;
                         columnValue = getColumnValue(idPrefix + data, column);
