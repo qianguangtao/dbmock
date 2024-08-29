@@ -6,7 +6,6 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.*;
 import cn.hutool.core.io.resource.ClassPathResource;
 import cn.hutool.core.lang.Pair;
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.Db;
@@ -33,13 +32,16 @@ import java.util.stream.Collectors;
 /**
  * Hello world!
  */
-public class App {
-
-    static {
-        idPrefix = IdUtil.simpleUUID().substring(0, 5) + "-";
-    }
-
-    static String idPrefix;
+public class App2 {
+    static List<String> tables = Arrays.asList("base_user"
+            , "rdwh_project_main"
+            , "rdwh_bd_virtual_organize"
+            , "rdwh_bd_virtual_organize_mapping"
+            , "rdwh_work"
+            , "rdwh_work_project_2024"
+            , "rdwh_work_project_info_2024"
+            , "rdwh_work_content"
+            , "base_user_extension");
 
     /**
      * 1、读取table.json配置
@@ -95,7 +97,7 @@ public class App {
                     String columnValue = null;
                     Column column = columnMap.get(columnName);
                     if (column.getIsKey()) {
-                        columnValue = getColumnValue(idPrefix + finalI, column);
+                        columnValue = getColumnValue(finalI, column);
                     } else if (ObjectUtil.isNotNull(column.getData())) {
                         if (column.getData() instanceof String) {
                             // column.getData()是String，则是取该表的其他字段值
@@ -133,7 +135,7 @@ public class App {
                         System.out.println("fkTableTotal = " + fkTableTotal + " fkTable：" + fkTable);
                         int percent = table.getTotal() / fkTableTotal;
                         int data = (finalI - 1) / percent + 1;
-                        columnValue = getColumnValue(idPrefix + data, column);
+                        columnValue = getColumnValue(data, column);
                     } else {
                         // 处理普通的非空字段
                         columnValue = getDefaultColumnValue(column);
