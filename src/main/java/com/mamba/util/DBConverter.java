@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.Entity;
 import com.alibaba.fastjson.JSON;
 import com.mamba.annotations.TableField;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
 import java.util.Date;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
  * @date 2024/8/24 9:18
  * @description: hutool db转换pojo工具类
  */
+@Slf4j
 public class DBConverter {
     public static <T> T entity2Pojo(Entity entity, Class<T> clazz) throws Exception {
         T t = clazz.newInstance();
@@ -48,11 +50,12 @@ public class DBConverter {
         return t;
     }
 
-    public static <T> List<T> entity2Pojo(List<Entity> entityList, Class<T> clazz) throws Exception {
+    public static <T> List<T> entity2Pojo(List<Entity> entityList, Class<T> clazz) {
         return entityList.stream().map(entity -> {
             try {
                 return entity2Pojo(entity, clazz);
             } catch (Exception e) {
+                log.error("转换异常" + e.getMessage(), e);
                 throw new RuntimeException(e);
             }
         }).collect(Collectors.toList());
