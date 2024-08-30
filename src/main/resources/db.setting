@@ -1,6 +1,6 @@
 ## db.setting文件
 
-url = jdbc:mysql://localhost:3306/gongshi_test
+url = jdbc:mysql://localhost:3306/gongshi_test1
 user = root
 pass = 1990
 

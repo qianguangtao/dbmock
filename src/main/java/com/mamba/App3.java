@@ -29,22 +29,17 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * main函数入口
- * @author 10071
+ * Hello world!
  */
-public class App {
+public class App3 {
 
     static {
         // idPrefix = IdUtil.simpleUUID().substring(0, 5) + "-";
         idPrefix = "1";
     }
 
-    /** 主键前缀 */
     static String idPrefix;
-    /** 批量insert的大小 */
-    static Integer BATCH_SIZE = 1000;
-    /** 配置文件 */
-    static String TABLE_FILE = "table1.json";
+    static String Table_File = "table3-single.json";
 
     /**
      * 1、读取table.json配置
@@ -57,163 +52,108 @@ public class App {
      * </p>
      * <p>
      * 4、step 3处理完，生成新的List<Table>，for循环生成insert语句，批量插入数据库
-     * 4.1、columnList[i].data为String，则是取本表的另一个字段的值
-     * 4.2、columnList[i].data为[]，则随机取个数，作为列值
-     * 4.3、columnList[i].data为{}，则取start~end中间的随机值（目前只支持时间范围）
+     * 4.1、columnList[i].data为数组，则随机取个数，作为列值
+     * 4.2、columnList[i].data为String，则是取本表的另一个字段的值
+     * 4.3、ColumnInfo中的nullable为‘NO’，则根据长度和类型，生成列值
      * 4.4、columnList[i].foreignKey不为空，则根据两个表total，平均分配外键id
-     * 4.5、ColumnInfo中的nullable为‘NO’，则根据长度和类型，生成列值
      * </p>
      * @param args
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
-        mock();
-    }
-
-    public static void mock() throws Exception {
-        List<Table> tablesList = getTableListFromFile(TABLE_FILE);
+        ClassPathResource cpr = new ClassPathResource(Table_File);
+        String s = new String(cpr.readBytes());
+        List<Table> tablesList = JSON.parseObject(s, new TypeReference<List<Table>>() {
+        });
         resolveTablesListWithDB(tablesList);
+        // System.out.println("处理完之后的tablesList");
         System.out.println(JSON.toJSONString(tablesList, SerializerFeature.PrettyFormat));
         Map<String, Integer> tableTotalMap = tablesList.stream().collect(Collectors.toMap(Table::getName, t -> t.getTotal()));
         // 4、构造insert语句
         for (Table table : tablesList) {
             System.out.println("正在处理表：" + table.getName());
             List<Column> columnList = table.getColumnList();
-            List<String> columnNameList = getInsertColumnName(columnList);
+            List<String> columnNameList = new ArrayList<String>();
+            List<String> allColumnNameList = columnList.stream().map(Column::getName).collect(Collectors.toList());
+            String key = columnList.stream().filter(Column::getIsKey).map(Column::getName).findFirst().get();
+            columnNameList.add(key);
+            // 获取当前列值依赖与其他列值的column，这种放在最后处理
+            List<String> columnWithDepend = columnList.stream().filter(c -> ObjectUtil.isNotNull(c.getData()) && (c.getData() instanceof String)).map(Column::getName).collect(Collectors.toList());
+            List<String> normalColumn = allColumnNameList.stream().filter(c -> !columnWithDepend.contains(c) && !c.equals(key)).collect(Collectors.toList());
+            columnNameList.addAll(normalColumn);
+            columnNameList.addAll(columnWithDepend);
             // 表列的处理顺序 主键 > 普通列 > 有依赖的列
+            // System.out.println("columnNameList排序后：" + columnNameList);
             Map<String, Column> columnMap = columnList.stream().collect(Collectors.toMap(Column::getName, c -> c));
             List<List<String>> valueListBatch = new ArrayList<>();
             for (int i = 1; i <= table.getTotal(); i++) {
-                List<String> valueList = calculateColumnValue(tableTotalMap, columnNameList, columnMap, Integer.valueOf(i), table.getTotal());
+                List<String> valueList = new ArrayList<>();
+                int finalI = i;
+                Map<String, String> foreignKeyMap = new HashMap<>();
+                columnNameList.forEach(columnName -> {
+                    String columnValue = null;
+                    Column column = columnMap.get(columnName);
+                    if (column.getIsKey()) {
+                        columnValue = getColumnValue(idPrefix + finalI, column);
+                    } else if (ObjectUtil.isNotNull(column.getData())) {
+                        if (column.getData() instanceof String) {
+                            // column.getData()是String，则是取该表的其他字段值
+                            String data = (String) column.getData();
+                            columnValue = foreignKeyMap.get(data);
+                        } else if (column.getData() instanceof JSONArray) {
+                            // column.getData()是数组，则随机取值
+                            JSONArray jsonArray = (JSONArray) column.getData();
+                            Object[] random = jsonArray.stream().toArray();
+                            columnValue = getColumnValue(random[new Random().nextInt(random.length)], column);
+                        } else if (column.getData() instanceof JSONObject) {
+                            // column.getData()是JSONObject，取开始-结束的随机值
+                            JSONObject jsonObject = (JSONObject) column.getData();
+                            String start = jsonObject.getString("start");
+                            String end = jsonObject.getString("end");
+                            if (!StrUtil.hasBlank(start, end)) {
+                                String datePattern = null;
+                                if (column.getJdbcType() == JdbcType.DATE) {
+                                    // 处理日期，取当前日期
+                                    datePattern = DatePattern.NORM_DATE_PATTERN;
+                                } else {
+                                    datePattern = DatePattern.NORM_DATETIME_PATTERN;
+                                }
+                                DateTime startTime = DateUtil.parse(start, datePattern);
+                                DateTime endTime = DateUtil.parse(end, datePattern);
+                                long between = DateUtil.between(startTime, endTime, DateUnit.DAY);
+                                DateTime dateTime = startTime.offsetNew(DateField.DAY_OF_YEAR, new Random().nextInt(Convert.toInt(between + 1)));
+                                columnValue = getColumnValue(DateUtil.format(dateTime, datePattern), column);
+                            }
+                        }
+                    } else if (ObjectUtil.isNotNull(column.getForeignKey())) {
+                        // 处理字段是另一个表的主键，这里table和fkTable是n:1的关系，将fkTable的主键（total）平均分配到table
+                        String fkTable = column.getForeignKey().split("\\.")[0];
+                        Integer fkTableTotal = tableTotalMap.get(fkTable);
+                        // System.out.println("fkTableTotal = " + fkTableTotal + " fkTable：" + fkTable);
+                        int percent = table.getTotal() / fkTableTotal;
+                        int data = (finalI - 1) / percent + 1;
+                        columnValue = getColumnValue(idPrefix + data, column);
+                    } else {
+                        // 处理普通的非空字段
+                        columnValue = getDefaultColumnValue(column);
+                    }
+                    foreignKeyMap.put(columnName, columnValue);
+                    valueList.add(columnValue);
+                });
                 valueListBatch.add(valueList);
             }
-            List<List<List<String>>> partition = ListUtil.partition(valueListBatch, BATCH_SIZE);
+            List<List<List<String>>> partition = ListUtil.partition(valueListBatch, 1000);
             for (List<List<String>> list : partition) {
                 String insertStatement = buildInsertStatement(table.getName(), columnNameList, list);
                 Db.use().execute(insertStatement);
+                // Thread.sleep(5000);
             }
             System.out.println("插入表：" + table.getName() + "成功");
         }
     }
 
-    /**
-     * 处理table.json中的columnList[i].data
-     * 4.1、columnList[i].data为String，则是取本表的另一个字段的值
-     * 4.2、columnList[i].data为[]，则随机取个数，作为列值
-     * 4.3、columnList[i].data为{}，则取start~end中间的随机值（目前只支持时间范围）
-     * @param column
-     * @param dependKeyMap
-     * @return
-     */
-    public static String calculateColumnValueByDataConfig(Column column, Map<String, String> dependKeyMap) {
-        if (column.getData() instanceof String) {
-            // column.getData()是String，则是取该表的其他字段值
-            String data = (String) column.getData();
-            return dependKeyMap.get(data);
-        } else if (column.getData() instanceof JSONArray) {
-            // column.getData()是数组，则随机取值
-            JSONArray jsonArray = (JSONArray) column.getData();
-            Object[] random = jsonArray.stream().toArray();
-            return getColumnValue(random[new Random().nextInt(random.length)], column);
-        } else if (column.getData() instanceof JSONObject) {
-            // column.getData()是JSONObject，取开始-结束的随机值
-            JSONObject jsonObject = (JSONObject) column.getData();
-            String start = jsonObject.getString("start");
-            String end = jsonObject.getString("end");
-            if (!StrUtil.hasBlank(start, end)) {
-                String datePattern;
-                if (column.getJdbcType() == JdbcType.DATE) {
-                    // 处理日期，取当前日期
-                    datePattern = DatePattern.NORM_DATE_PATTERN;
-                } else {
-                    datePattern = DatePattern.NORM_DATETIME_PATTERN;
-                }
-                DateTime startTime = DateUtil.parse(start, datePattern);
-                DateTime endTime = DateUtil.parse(end, datePattern);
-                long between = DateUtil.between(startTime, endTime, DateUnit.DAY);
-                DateTime dateTime = startTime.offsetNew(DateField.DAY_OF_YEAR, new Random().nextInt(Convert.toInt(between + 1)));
-                return getColumnValue(DateUtil.format(dateTime, datePattern), column);
-            }
-        } else {
-            throw new IllegalArgumentException("Invalid column value");
-        }
-        return null;
-    }
-
-    /**
-     * 计算insert 语句的列值
-     * @param tableTotalMap  key=表名，value=总数
-     * @param columnNameList 列名list
-     * @param columnMap      key=列名，value=Column封装的对象
-     * @param index          当前构造insert语句的下标（for循环下标）
-     * @param total          当前构造insert语句的总条数
-     * @return
-     */
-    public static List<String> calculateColumnValue(Map<String, Integer> tableTotalMap, List<String> columnNameList, Map<String, Column> columnMap, int index, int total) {
-        List<String> valueList = new ArrayList<>();
-        Map<String, String> dependKeyMap = new HashMap<>();
-        for (String columnName : columnNameList) {
-            String columnValue = null;
-            Column column = columnMap.get(columnName);
-            if (column.getIsKey()) {
-                columnValue = getColumnValue(idPrefix + index, column);
-            } else if (ObjectUtil.isNotNull(column.getData())) {
-                columnValue = calculateColumnValueByDataConfig(column, dependKeyMap);
-            } else if (ObjectUtil.isNotNull(column.getForeignKey())) {
-                // 处理字段是另一个表的主键，这里table和fkTable是n:1的关系，将fkTable的主键（total）平均分配到table
-                String fkTable = column.getForeignKey().split("\\.")[0];
-                Integer fkTableTotal = tableTotalMap.get(fkTable);
-                int percent = total / fkTableTotal;
-                int data = (index - 1) / percent + 1;
-                columnValue = getColumnValue(idPrefix + data, column);
-            } else {
-                // 处理普通的非空字段
-                columnValue = getDefaultColumnValue(column);
-            }
-            dependKeyMap.put(columnName, columnValue);
-            valueList.add(columnValue);
-        }
-        return valueList;
-    }
-
-    /**
-     * 获取insert语句insert into table(column1, column2, column3)中的[column1, column2, column3]集合
-     * 列排序规则：key > 普通列 > 依赖于其他列的列
-     * @param columnList
-     * @return
-     */
-    public static List<String> getInsertColumnName(List<Column> columnList) {
-        List<String> columnNameList = new ArrayList<String>();
-        List<String> allColumnNameList = columnList.stream().map(Column::getName).collect(Collectors.toList());
-        String key = columnList.stream().filter(Column::getIsKey).map(Column::getName).findFirst().get();
-        columnNameList.add(key);
-        // 获取当前列值依赖与其他列值的column，这种放在最后处理
-        List<String> columnWithDepend = columnList.stream().filter(c -> ObjectUtil.isNotNull(c.getData()) && (c.getData() instanceof String)).map(Column::getName).collect(Collectors.toList());
-        List<String> normalColumn = allColumnNameList.stream().filter(c -> !columnWithDepend.contains(c) && !c.equals(key)).collect(Collectors.toList());
-        columnNameList.addAll(normalColumn);
-        columnNameList.addAll(columnWithDepend);
-        return columnNameList;
-    }
-
-    /**
-     * 读取配置信息
-     * @param fileClassPath
-     * @return
-     */
-    public static List<Table> getTableListFromFile(String fileClassPath) {
-        ClassPathResource cpr = new ClassPathResource(fileClassPath);
-        String s = new String(cpr.readBytes());
-        return JSON.parseObject(s, new TypeReference<List<Table>>() {
-        });
-    }
-
-    /**
-     * 获取默认列值
-     * @param column
-     * @return
-     */
     public static String getDefaultColumnValue(Column column) {
-        String columnValue;
+        String columnValue = null;
         if (column.getJdbcType().clazz == LocalDate.class) {
             return "'" + DateUtil.format(new Date(), DatePattern.NORM_DATE_PATTERN) + "'";
         } else if (column.getJdbcType().clazz == LocalDateTime.class) {
@@ -230,12 +170,6 @@ public class App {
         return getColumnValue(columnValue, column);
     }
 
-    /**
-     * 获取列值，主要是判断是否加''
-     * @param value
-     * @param column
-     * @return
-     */
     public static String getColumnValue(Object value, Column column) {
         if (column.getJdbcType().clazz == String.class
                 || (column.getJdbcType().clazz == LocalDate.class)
@@ -327,6 +261,7 @@ public class App {
             }
         }
         columns.append(")");
+
         // 构建值部分
         StringBuilder values = new StringBuilder("VALUES ");
         for (int i = 0; i < columnValues.size(); i++) {
@@ -343,16 +278,11 @@ public class App {
                 values.append(", ");
             }
         }
+
         // 构造完整的 SQL 插入语句
         return "INSERT INTO " + tableName + " " + columns + " " + values + ";";
     }
 
-    /**
-     * 获取表信息
-     * @param tableName
-     * @return
-     * @throws SQLException
-     */
     public static List<Entity> getTableInfo(String tableName) throws SQLException {
         String sql = "SHOW FULL COLUMNS FROM " + tableName;
         return Db.use().query(sql);
