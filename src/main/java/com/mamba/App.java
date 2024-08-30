@@ -6,7 +6,6 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.*;
 import cn.hutool.core.io.resource.ClassPathResource;
 import cn.hutool.core.lang.Pair;
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.Db;
@@ -15,7 +14,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
-import com.alibaba.fastjson.parser.Feature;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.mamba.pojo.Column;
 import com.mamba.pojo.ColumnInfo;
@@ -36,10 +34,12 @@ import java.util.stream.Collectors;
 public class App {
 
     static {
-        idPrefix = IdUtil.simpleUUID().substring(0, 5) + "-";
+        // idPrefix = IdUtil.simpleUUID().substring(0, 5) + "-";
+        idPrefix = "1";
     }
 
     static String idPrefix;
+    static String Table_File = "table3-single.json";
 
     /**
      * 1、读取table.json配置
@@ -61,9 +61,8 @@ public class App {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
-        ClassPathResource cpr = new ClassPathResource("table2.json");
-        final Object parse = JSON.parse(cpr.readBytes(), Feature.SupportArrayToBean);
-        String s = JSON.toJSONString(parse);
+        ClassPathResource cpr = new ClassPathResource(Table_File);
+        String s = new String(cpr.readBytes());
         List<Table> tablesList = JSON.parseObject(s, new TypeReference<List<Table>>() {
         });
         resolveTablesListWithDB(tablesList);

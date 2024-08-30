@@ -1,36 +1,28 @@
 [
   {
-    "name": "rdwh_bd_virtual_organize",
+    "name": "test",
     "total": 50,
     "columnList": [
       {
-        "name": "organize_code",
-        "required": true
-      },
-      {
-        "name": "F_CreatorTime",
-        "required": true
+        "name": "name",
+        "data": [
+          "1",
+          "2"
+        ]
       }
     ]
   },
   {
-    "name": "rdwh_bd_virtual_organize_mapping",
-    "total": 2000,
+    "name": "t_user",
+    "total": 20,
     "columnList": [
       {
-        "name": "virtual_organize_id",
-        "foreignKey": "rdwh_bd_virtual_organize.F_Id"
+        "name": "F_company_code",
+        "required": true
       },
       {
-        "name": "organize_id",
-        "data": "virtual_organize_id"
-      },
-      {
-        "name": "F_CreatorTime",
-        "data": {
-          "start": "2024-01-01 11:11:11",
-          "end": "2024-02-01 11:11:11"
-        }
+        "name": "F_RealName",
+        "data": "F_company_code"
       }
     ]
   }
