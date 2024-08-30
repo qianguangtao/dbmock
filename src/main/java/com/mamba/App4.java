@@ -32,14 +32,13 @@ import java.util.stream.Collectors;
  * main函数入口
  * @author 10071
  */
-public class App {
+public class App4 {
 
     static {
         // idPrefix = IdUtil.simpleUUID().substring(0, 5) + "-";
         idPrefix = "1";
     }
 
-    static Random columnRandom = new Random();
     /** 主键前缀 */
     static String idPrefix;
     /** 批量insert的大小 */
@@ -115,7 +114,7 @@ public class App {
             // column.getData()是数组，则随机取值
             JSONArray jsonArray = (JSONArray) column.getData();
             Object[] random = jsonArray.stream().toArray();
-            return getColumnValue(random[columnRandom.nextInt(random.length)], column);
+            return getColumnValue(random[new Random().nextInt(random.length)], column);
         } else if (column.getData() instanceof JSONObject) {
             // column.getData()是JSONObject，取开始-结束的随机值
             JSONObject jsonObject = (JSONObject) column.getData();
@@ -132,7 +131,7 @@ public class App {
                 DateTime startTime = DateUtil.parse(start, datePattern);
                 DateTime endTime = DateUtil.parse(end, datePattern);
                 long between = DateUtil.between(startTime, endTime, DateUnit.DAY);
-                DateTime dateTime = startTime.offsetNew(DateField.DAY_OF_YEAR, columnRandom.nextInt(Convert.toInt(between + 1)));
+                DateTime dateTime = startTime.offsetNew(DateField.DAY_OF_YEAR, new Random().nextInt(Convert.toInt(between + 1)));
                 return getColumnValue(DateUtil.format(dateTime, datePattern), column);
             }
         } else {
