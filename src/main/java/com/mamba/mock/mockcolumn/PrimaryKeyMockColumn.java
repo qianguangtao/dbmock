@@ -1,4 +1,4 @@
-package com.mamba.mock;
+package com.mamba.mock.mockcolumn;
 
 import com.mamba.config.MockConfig;
 import com.mamba.config.MockConfigProperties;

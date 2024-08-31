@@ -1,4 +1,4 @@
-package com.mamba.mock;
+package com.mamba.mock.columnconfigdata;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.*;

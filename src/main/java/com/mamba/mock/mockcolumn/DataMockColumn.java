@@ -1,6 +1,8 @@
-package com.mamba.mock;
+package com.mamba.mock.mockcolumn;
 
 import com.mamba.config.MockConfig;
+import com.mamba.mock.columnconfigdata.AbstractColumnConfigData;
+import com.mamba.mock.columnconfigdata.ColumnConfigDataFactory;
 import com.mamba.pojo.Column;
 import lombok.extern.slf4j.Slf4j;
 

@@ -1,6 +1,6 @@
 package com.mamba.util;
 
-import com.mamba.mock.AbstractMockColumn;
+import com.mamba.mock.mockcolumn.AbstractMockColumn;
 import org.reflections.Reflections;
 import org.reflections.util.ConfigurationBuilder;
 

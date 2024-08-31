@@ -1,6 +1,7 @@
-package com.mamba.mock;
+package com.mamba.mock.columnconfigdata;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.mamba.mock.mockcolumn.AbstractMockColumn;
 import com.mamba.util.ReflectUtil;
 
 import java.util.HashMap;

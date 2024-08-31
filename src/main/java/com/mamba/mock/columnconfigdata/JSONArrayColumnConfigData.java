@@ -1,4 +1,4 @@
-package com.mamba.mock;
+package com.mamba.mock.columnconfigdata;
 
 import com.alibaba.fastjson.JSONArray;
 import com.mamba.config.MockConfig;

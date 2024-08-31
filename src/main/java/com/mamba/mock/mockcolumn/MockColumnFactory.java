@@ -1,7 +1,6 @@
-package com.mamba.config;
+package com.mamba.mock.mockcolumn;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.mamba.mock.*;
 import com.mamba.pojo.Column;
 
 /**

@@ -1,5 +1,6 @@
-package com.mamba.mock;
+package com.mamba.mock.columnconfigdata;
 
+import com.mamba.mock.mockcolumn.AbstractMockColumn;
 import lombok.Getter;
 import lombok.Setter;
 

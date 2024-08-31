@@ -1,4 +1,4 @@
-package com.mamba.mock;
+package com.mamba.mock.mockcolumn;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DatePattern;
@@ -29,7 +29,7 @@ public abstract class AbstractMockColumn {
      */
     public abstract String getColumnValue();
 
-    protected String getColumnValue(Object value) {
+    public String getColumnValue(Object value) {
         if (this.getColumn().getJdbcType().clazz == String.class
                 || (this.getColumn().getJdbcType().clazz == LocalDate.class)
                 || (this.getColumn().getJdbcType().clazz == LocalDateTime.class)) {
@@ -39,7 +39,7 @@ public abstract class AbstractMockColumn {
         }
     }
 
-    String getDefaultColumnValue() {
+    public String getDefaultColumnValue() {
         String columnValue;
         if (this.getColumn().getJdbcType().clazz == LocalDate.class) {
             return "'" + DateUtil.format(new Date(), DatePattern.NORM_DATE_PATTERN) + "'";
