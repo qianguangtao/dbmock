@@ -4,7 +4,7 @@ dbmock是用来模拟mysql数据的小工具。接口压测的时候，我们需
 
 ## 代码仓库
 
-https://gitee.com/mamba_tools/dbmock.git
+gitee：https://gitee.com/mamba_tools/dbmock.git
 
 ## 代码说明
 
@@ -91,15 +91,15 @@ resources下新建**table.json**
 
 resources下新建**application.properties**
 
-| 配置名           | 配置类型 | 配置说明                           | 示例        |
-| ---------------- | -------- | ---------------------------------- | ----------- |
+| 配置名           | 配置类型 | 配置说明                           | 示例       |
+| ---------------- | -------- | ---------------------------------- | ---------- |
 | dbmock.idType    | string   | insert主键生成类型                 | String\|int |
-| dbmock.batchSize | int      | 批量insert大小，每1000条insert一次 | 1000        |
-| dbmock.tableFile | string   | mock表信息配置的json文件           | table.json  |
+| dbmock.batchSize | int      | 批量insert大小，每1000条insert一次 | 1000       |
+| dbmock.tableFile | string   | mock表信息配置的json文件           | table.json |
 
 # 使用说明
 
-调用**DBMock.mock()**即可
+调用 **DBMock.mock()** 即可
 
-注意：数据库连接用户需要有**SHOW FULL COLUMNS FROM xxx**权限
+注意：数据库连接用户需要有 **SHOW FULL COLUMNS FROM xxx** 权限
 
