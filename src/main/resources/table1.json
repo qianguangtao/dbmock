@@ -121,7 +121,7 @@
         "foreignKey": "rdwh_work_project_2024.F_Id"
       },
       {
-        "name": "F_week_info",
+        "name": "F_work_info",
         "foreignKey": "rdwh_work_content.F_Id"
       },
       {

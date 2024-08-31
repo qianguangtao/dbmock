@@ -1,5 +1,6 @@
 package com.mamba.config;
 
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.io.resource.ClassPathResource;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
@@ -7,6 +8,7 @@ import cn.hutool.core.util.StrUtil;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.Random;
 
 /**
  * @author qiangt
@@ -19,6 +21,8 @@ public class MockConfigPropertiesBean implements MockConfigProperties {
     private final String idType;
     private final Integer batchSize;
     private final String tableFile;
+    private final String ID_PREFIX_STRING = IdUtil.simpleUUID().substring(0, 5) + "-";
+    private final String ID_PREFIX_INT = Convert.toStr(new Random().nextInt(999));
 
     public MockConfigPropertiesBean() {
         ClassPathResource cpr = new ClassPathResource("application.properties");
@@ -37,9 +41,9 @@ public class MockConfigPropertiesBean implements MockConfigProperties {
     @Override
     public String getIdPrefix() {
         if ("String".equals(idType)) {
-            return IdUtil.simpleUUID().substring(0, 5) + "-";
+            return ID_PREFIX_STRING;
         } else {
-            return "1";
+            return ID_PREFIX_INT;
         }
     }
 
