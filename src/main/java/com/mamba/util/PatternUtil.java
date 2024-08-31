@@ -9,10 +9,15 @@ import java.util.regex.Pattern;
  * @author qiangt
  * @version 1.0
  * @date 2024/8/27 22:54
- * @description: TODO
+ * @description: 正则工具类
  */
 public class PatternUtil {
 
+    /**
+     * 获取列的类型和大小。
+     * @param columnType 列类型，格式为“类型(大小)”
+     * @return 包含列类型和大小的Pair对象，如果匹配失败则返回null
+     */
     public static Pair<String, Integer> getColumnTypeAndSize(String columnType) {
         // 正则表达式
         String regex = "(\\w+)\\((\\d+)\\)";

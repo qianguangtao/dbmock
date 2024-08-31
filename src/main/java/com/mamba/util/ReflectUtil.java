@@ -10,9 +10,16 @@ import java.util.Set;
  * @author qiangt
  * @version 1.0
  * @date 2024/8/30 22:53
- * @description: TODO
+ * @description: 反射工具类
  */
 public class ReflectUtil {
+    /**
+     * 根据父类扫描指定包下的所有子类，并返回这些子类的Class集合。
+     * @param packageName 要扫描的包名
+     * @param clazz       父类Class对象
+     * @param <T>         父类的类型
+     * @return 包含所有子类Class对象的Set集合
+     */
     public static <T> Set<Class<? extends T>> scanClassBySuper(String packageName, Class<T> clazz) {
         // 创建 ConfigurationBuilder 实例并指定扫描规则
         ConfigurationBuilder configBuilder =

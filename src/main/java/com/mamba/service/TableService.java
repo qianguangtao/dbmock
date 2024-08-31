@@ -14,7 +14,7 @@ import java.util.List;
  * @author qiangt
  * @version 1.0
  * @date 2024/8/30 17:09
- * @description: TODO
+ * @description: 数据库操作service
  */
 @Slf4j
 public class TableService {

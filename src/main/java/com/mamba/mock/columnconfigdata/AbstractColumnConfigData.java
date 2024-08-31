@@ -8,7 +8,7 @@ import lombok.Setter;
  * @author qiangt
  * @version 1.0
  * @date 2024/8/31 9:49
- * @description: TODO
+ * @description: 抽象table.json里面的columnList[i].data封装类
  */
 public abstract class AbstractColumnConfigData {
     /**

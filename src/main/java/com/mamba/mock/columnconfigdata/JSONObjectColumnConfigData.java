@@ -11,7 +11,7 @@ import com.mamba.pojo.JdbcType;
  * @author qiangt
  * @version 1.0
  * @date 2024/8/31 9:49
- * @description: TODO
+ * @description: JSONObject类型的ColumnConfigData
  */
 public class JSONObjectColumnConfigData extends AbstractColumnConfigData {
 

@@ -12,7 +12,7 @@ import java.util.Set;
  * @author qiangt
  * @version 1.0
  * @date 2024/8/31 10:24
- * @description: TODO
+ * @description: ColumnConfigData工厂类
  */
 public class ColumnConfigDataFactory {
     static {

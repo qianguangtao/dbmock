@@ -10,13 +10,17 @@ import java.util.Map;
  * @author qiangt
  * @version 1.0
  * @date 2024/8/30 20:51
- * @description: TODO
+ * @description: mock表外键
  */
 public class ForeignKeyMockColumn extends AbstractMockColumn {
     public ForeignKeyMockColumn(Column column, int total, int index) {
         super(column, total, index);
     }
 
+    /**
+     * 重写父类方法，获取列值的字符串表示形式。
+     * @return 列值的字符串表示形式
+     */
     @Override
     public String getColumnValue() {
         Map<String, Integer> tableTotalMap = MockConfig.getInstance().getTableTotalMap();

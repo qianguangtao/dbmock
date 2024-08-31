@@ -15,7 +15,7 @@ import java.util.Date;
  * @author qiangt
  * @version 1.0
  * @date 2024/8/30 17:13
- * @description: TODO
+ * @description: Mock列数据的封装抽象类
  */
 @Data
 public abstract class AbstractMockColumn {
@@ -29,6 +29,11 @@ public abstract class AbstractMockColumn {
      */
     public abstract String getColumnValue();
 
+    /**
+     * 获取列值的insert values表示形式（字符串有''）
+     * @param value 列值
+     * @return 列值的字符串表示形式
+     */
     public String getColumnValue(Object value) {
         if (this.getColumn().getJdbcType().clazz == String.class
                 || (this.getColumn().getJdbcType().clazz == LocalDate.class)
@@ -39,6 +44,10 @@ public abstract class AbstractMockColumn {
         }
     }
 
+    /**
+     * 获取列默认值的字符串表示形式
+     * @return 列默认值的字符串表示形式
+     */
     public String getDefaultColumnValue() {
         String columnValue;
         if (this.getColumn().getJdbcType().clazz == LocalDate.class) {

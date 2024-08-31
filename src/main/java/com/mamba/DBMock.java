@@ -26,10 +26,14 @@ import java.util.stream.Collectors;
  * @author qiangt
  * @version 1.0
  * @date 2024/8/30 21:18
- * @description: TODO
+ * @description: db mock数据主类
  */
 @Slf4j
 public class DBMock {
+    /**
+     * 模拟数据生成并批量插入数据库表
+     * @return 无返回值
+     */
     public static void mock() {
         List<Table> tablesList = MockConfig.getInstance().getTablesList();
         resolveTablesListWithDB(tablesList);

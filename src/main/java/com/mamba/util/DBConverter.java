@@ -20,6 +20,14 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class DBConverter {
+    /**
+     * 将Entity对象转换成指定类型的POJO对象
+     * @param entity 要转换的Entity对象
+     * @param clazz  转换后的POJO对象类型
+     * @param <T>    转换后的POJO对象类型
+     * @return 转换后的POJO对象
+     * @throws Exception 如果转换过程中出现异常
+     */
     public static <T> T entity2Pojo(Entity entity, Class<T> clazz) throws Exception {
         T t = clazz.newInstance();
         Field[] declaredFields = clazz.getDeclaredFields();
@@ -50,6 +58,14 @@ public class DBConverter {
         return t;
     }
 
+    /**
+     * 将实体列表转换成指定类型的POJO对象列表
+     * @param entityList 要转换的实体列表
+     * @param clazz      转换后的POJO对象类型
+     * @param <T>        转换后的POJO对象类型
+     * @return 转换后的POJO对象列表
+     * @throws RuntimeException 如果转换过程中出现异常
+     */
     public static <T> List<T> entity2Pojo(List<Entity> entityList, Class<T> clazz) {
         return entityList.stream().map(entity -> {
             try {
@@ -61,6 +77,14 @@ public class DBConverter {
         }).collect(Collectors.toList());
     }
 
+    /**
+     * 将POJO对象转换为Entity对象
+     * @param pojo      待转换的POJO对象
+     * @param clazz     POJO对象的Class类型
+     * @param tableName 数据库表名
+     * @return 转换后的Entity对象
+     * @throws Exception 转换过程中可能抛出的异常
+     */
     public static Entity pojo2Entity(Object pojo, Class clazz, String tableName) throws Exception {
         Field[] declaredFields = clazz.getDeclaredFields();
         Entity entity = Entity.create(tableName);
